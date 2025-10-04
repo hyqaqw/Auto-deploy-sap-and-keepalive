@@ -67,32 +67,22 @@ jobs:
               echo "CF_API=https://api.cf.br10.hana.ondemand.com" >> $GITHUB_ENV
               echo "APP_NAME=moontv-awsbr$RANDOM_STR" >> $GITHUB_ENV
               ;;
-            # ... (the rest of the case statement is omitted for brevity but should be included) ...
-            *) # Default case
-              echo "Invalid region selected"
-              exit 1
+            "AWS-KR(Seoul)")
+              echo "CF_API=https://api.cf.ap12.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awskr$RANDOM_STR" >> $GITHUB_ENV
               ;;
-          esac
-
-      - name: Install CF CLI
-        run: |
-          wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
-          echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
-          sudo apt-get update
-          sudo apt-get install cf8-cli -y
-
-      - name: Login to Cloud Foundry
-        run: |
-          cf api ${{ env.CF_API }}
-          cf auth "${{ secrets.CF_USER }}" "${{ secrets.CF_PASSWORD }}"
-          cf target -o "${{ secrets.CF_ORG }}" -s "${{ secrets.CF_SPACE }}"
-
-      - name: Push app to Cloud Foundry
-        run: |
-          cf push ${{ env.APP_NAME }} --docker-image ghcr.io/eaglehhha/lunatv:latest --docker-username ${{ github.actor }} --docker-password ${{ secrets.GITHUB_TOKEN }} --no-start
-
-      - name: Configure Redis env
-        run: |
-          cf set-env ${{ env.APP_NAME }} NEXT_PUBLIC_STORAGE_TYPE "redis"
-          cf set-env ${{ env.APP_NAME }} UPSTASH_REDIS_URL "${{ secrets.UPSTASH_REDIS_URL }}"
-          cf restage ${{ env.APP_NAME }}
+            "AWS-CA(Montreal)")
+              echo "CF_API=https://api.cf.ca10.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsca$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-US(VA)")
+              echo "CF_API=https://api.cf.us10-001.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsusva$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-US(OR)")
+              echo "CF_API=https://api.cf.us11.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsusor$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-EU(Frankfurt)")
+              echo "CF_API=https://api.cf.eu10-005.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-waseu$RANDOM_STR" >> $GITHUB_ENV
