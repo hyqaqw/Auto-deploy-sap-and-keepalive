@@ -1,6 +1,7 @@
 name: Automatic deployment of moontv to SAP
+
 on:
-  workflow_dispatch:  # Only allow manual trigger
+  workflow_dispatch:
     inputs:
       type:
         description: 'Select the version to deploy'
@@ -17,17 +18,20 @@ on:
         default: 'US(free)'
         type: choice
         options:
-          - SG(free)  # Azure Singapore
-          - US(free)  # AWS US
+          # Free area
+          - SG(free)      # Azure Singapore
+          - US(free)      # AWS US
+          # AWS Regions
           - AWS-AU(Sydney)
           - AWS-BR(São Paulo)
           - AWS-KR(Seoul)
           - AWS-CA(Montreal)
-          - AWS-US (Virginia)
+          - AWS-US(VA)
           - AWS-US(OR)
           - AWS-EU(Frankfurt)
           - AWS-JP(Tokyo)
           - AWS-SG(Singapore)
+          # GCP Regions
           - GCP-AU(Sydney)
           - GCP-BR(São Paulo)
           - GCP-US(IA)
@@ -37,6 +41,7 @@ on:
           - GCP-IL(Tel Aviv)
           - GCP-IN(Mumbai)
           - GCP-KSA(Dammam)
+          # Azure Region
           - Azure-AU(Sydney)
           - Azure-BR(São Paulo)
           - Azure-CA(Montreal)
@@ -45,6 +50,7 @@ on:
           - Azure-EU(Netherlands)
           - Azure-JP(Tokyo)
           - Azure-SG(Singapore)
+          # SAP Neo Region
           - Neo-UAE(Dubai)
           - Neo-KSA(Riyadh)
       app_name:
@@ -60,7 +66,6 @@ env:
 jobs:
   deploy-app:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -75,45 +80,162 @@ jobs:
       - name: Determine CF API endpoint and app name
         run: |
           RANDOM_STR=$(head /dev/urandom | tr -dc 'a-z' | head -c 6)
+
           case "${{ github.event.inputs.region }}" in
-            "SG(free)") echo "CF_API=https://api.cf.ap21.hana.ondemand.com" >> $GITHUB_ENV
-                        echo "APP_NAME=moontv-freesg$RANDOM_STR" >> $GITHUB_ENV
-                        ;;
-            "US(free)") echo "CF_API=https://api.cf.us10-001.hana.ondemand.com" >> $GITHUB_ENV
-                        echo "APP_NAME=moontv-freeus$RANDOM_STR" >> $GITHUB_ENV
-                        ;;
-            # Add more regions here...
+            # Free region
+            "SG(free)")
+              echo "CF_API=https://api.cf.ap21.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-freesg$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "US(free)")
+              echo "CF_API=https://api.cf.us10-001.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-freeus$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            # AWS Region
+            "AWS-AU(Sydney)")
+              echo "CF_API=https://api.cf.ap10.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsau$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-BR(São Paulo)")
+              echo "CF_API=https://api.cf.br10.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsbr$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-KR(Seoul)")
+              echo "CF_API=https://api.cf.ap12.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awskr$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-CA(Montreal)")
+              echo "CF_API=https://api.cf.ca10.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsca$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-US(VA)")
+              echo "CF_API=https://api.cf.us10-001.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsusva$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-US(OR)")
+              echo "CF_API=https://api.cf.us11.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsusor$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-EU(Frankfurt)")
+              echo "CF_API=https://api.cf.eu10-005.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-waseu$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-JP(Tokyo)")
+              echo "CF_API=https://api.cf.jp10.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsjp$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-SG(Singapore)")
+              echo "CF_API=https://api.cf.ap11.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awssg$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            # GCP Region
+            "GCP-AU(Sydney)")
+              echo "CF_API=https://api.cf.ap30.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpau$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-BR(São Paulo)")
+              echo "CF_API=https://api.cf.br30.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpbr$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-US(IA)")
+              echo "CF_API=https://api.cf.us30.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpus$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-EU(Frankfurt)")
+              echo "CF_API=https://api.cf.eu30.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpeu$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-JP(Osaka)")
+              echo "CF_API=https://api.cf.jp30.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpjpo$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-JP(Tokyo)")
+              echo "CF_API=https://api.cf.jp31.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpjpt$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-IL(Tel Aviv)")
+              echo "CF_API=https://api.cf.il30.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpil$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-IN(Mumbai)")
+              echo "CF_API=https://api.cf.in30.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpin$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "GCP-KSA(Dammam)")
+              echo "CF_API=https://api.cf.sa31.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-gcpsa$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            # Azure region
+            "Azure-AU(Sydney)")
+              echo "CF_API=https://api.cf.ap20.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azau$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Azure-BR(São Paulo)")
+              echo "CF_API=https://api.cf.br20.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azbr$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Azure-CA(Montreal)")
+              echo "CF_API=https://api.cf.ca20.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azca$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Azure-US(VA)")
+              echo "CF_API=https://api.cf.us21.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azva$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Azure-US(WA)")
+              echo "CF_API=https://api.cf.us20.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azwa$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Azure-EU(Netherlands)")
+              echo "CF_API=https://api.cf.eu20-001.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azeu$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Azure-JP(Tokyo)")
+              echo "CF_API=https://api.cf.jp20.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azjp$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Azure-SG(Singapore)")
+              echo "CF_API=https://api.cf.ap21.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-azsg$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            # SAP Neo region
+            "Neo-UAE(Dubai)")
+              echo "CF_API=https://api.cf.neo-ae1.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-neouae$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "Neo-KSA(Riyadh)")
+              echo "CF_API=https://api.cf.neo-sa1.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-neoksa$RANDOM_STR" >> $GITHUB_ENV
+              ;;
           esac
 
-          # If the user provided an application name, use the user-provided one
           if [ -n "${{ github.event.inputs.app_name }}" ]; then
             echo "APP_NAME=${{ github.event.inputs.app_name }}" >> $GITHUB_ENV
           fi
 
+          if [[ -n "${{ secrets.DOCKER_IMAGE }}" ]]; then
+            echo "DOCKER_IMAGE=${{ secrets.DOCKER_IMAGE }}" >> $GITHUB_ENV
+          else
+            if [ "${{ github.event.inputs.type }}" = "Lunatv" ]; then
+              echo "DOCKER_IMAGE=ghcr.io/moontechlab/lunatv:latest" >> $GITHUB_ENV
+            elif [ "${{ github.event.inputs.type }}" = "KatelyaTV" ]; then
+              echo "DOCKER_IMAGE=ghcr.io/katelya77/katelyatv:latest" >> $GITHUB_ENV
+            else
+              echo "DOCKER_IMAGE=ghcr.io/eooce/moontv:latest" >> $GITHUB_ENV
+            fi
+          fi
+
           echo "Using API endpoint: $CF_API"
           echo "Application name: $APP_NAME"
-
-      - name: Set Upstash database env
-        run: |
-          cf set-env ${{ env.APP_NAME }} NEXT_PUBLIC_STORAGE_TYPE "upstash"
-          cf set-env ${{ env.APP_NAME }} KVROCKS_URL "${{ secrets.KVROCKS_URL }}"
-          cf restage ${{ env.APP_NAME }}
+          echo "Deployment type: ${{ env.DOCKER_IMAGE }}"
 
       - name: Login to Cloud Foundry
         run: |
           cf login -a ${{ env.CF_API }} -u "${{ secrets.EMAIL }}" -p "${{ secrets.PASSWORD }}"
-          
-          # Get organization list
           ORG=$(cf orgs | sed -n '4p')
-          echo "Selected org: $ORG"
           echo "ORG=$ORG" >> $GITHUB_ENV
-
-          # Get list of spaces
           SPACE=$(cf spaces | sed -n '4p')
-          echo "Selected space: $SPACE"
           echo "SPACE=$SPACE" >> $GITHUB_ENV
-
-          # Re-login using the retrieved organization and space
           cf login -a ${{ env.CF_API }} -u "${{ secrets.EMAIL }}" -p "${{ secrets.PASSWORD }}" -o "$ORG" -s "$SPACE"
 
       - name: Deploy application
@@ -122,34 +244,41 @@ jobs:
             echo "Deployment successful"
           else
             cf delete ${{ env.APP_NAME }} -f -r
-            echo "Deployment failed, cleaning up remnants. Please try deploying again between 8:20 AM and 9:00 AM."
+            echo "❌ No resources left, try again tomorrow morning."
             exit 1
           fi
 
+      - name: Configure Redis env
+        run: |
+          cf set-env ${{ env.APP_NAME }} NEXT_PUBLIC_STORAGE_TYPE "redis"
+          # 如果用 Upstash
+          cf set-env ${{ env.APP_NAME }} UPSTASH_REDIS_URL "${{ secrets.UPSTASH_REDIS_URL }}"
+          # 如果是自建 Redis（记得注释掉上面一行）
+          # cf set-env ${{ env.APP_NAME }} REDIS_URL "${{ secrets.REDIS_URL }}"
+          cf set-env ${{ env.APP_NAME }} PASSWORD "${{ secrets.TV_PASSWORD || '123456'}}"
+          cf restage ${{ env.APP_NAME }}
+
       - name: Verify deployment
         run: |
-          cf set-env ${{ env.APP_NAME }} PASSWORD ${{ secrets.TV_PASSWORD || '123456'}}
-          cf restage ${{ env.APP_NAME }}
           STATUS=$(cf app ${{ env.APP_NAME }} | grep "requested state:" | awk '{print $3}')
           if [ "$STATUS" = "started" ]; then
             echo "✅ Moontv started successfully"
           else
-            echo "❌ Application failed to start, current status: $STATUS"
+            echo "❌ Application failed to start, status: $STATUS"
             cf logs ${{ env.APP_NAME }} --recent
             exit 1
           fi
 
       - name: Detailed Deployment Information
         run: |
-          echo "🚀 Deployment completed! Detailed information as follows:"
+          echo "🚀 Deployment completed!"
           echo "Region: ${{ github.event.inputs.region }}"
-          echo "Organization (ORG): ${{ env.ORG }}"
-          echo "Space (SPACE): ${{ env.SPACE }}"
-          echo "Application Name (App Name): ${{ env.APP_NAME }}"
-
+          echo "Organization: ${{ env.ORG }}"
+          echo "Space: ${{ env.SPACE }}"
+          echo "Application: ${{ env.APP_NAME }}"
           ROUTE=$(cf app ${{ env.APP_NAME }} | grep "routes:" | awk '{print $2}')
           if [ -n "$ROUTE" ]; then
-            echo "Moontv—URL: https://$ROUTE"
+            echo "URL: https://$ROUTE"
           else
-            echo "⚠️ Application route not found, please check deployment status."
+            echo "⚠️ No route found, check deployment."
           fi
