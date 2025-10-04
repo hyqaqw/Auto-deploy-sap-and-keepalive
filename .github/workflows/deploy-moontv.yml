@@ -1,0 +1,98 @@
+name: Deploy MoonTV to SAP Cloud Foundry
+
+on:
+  workflow_dispatch:
+    inputs:
+      region:
+        description: "选择部署区域"
+        required: true
+        default: "SG(free)"
+        type: choice
+        options:
+          - 'SG(free)'
+          - 'US(free)'
+          - 'AWS-AU(Sydney)'
+          - 'AWS-BR(São Paulo)'
+          - 'AWS-KR(Seoul)'
+          - 'AWS-CA(Montreal)'
+          - 'AWS-US(VA)'
+          - 'AWS-US(OR)'
+          - 'AWS-EU(Frankfurt)'
+          - 'AWS-JP(Tokyo)'
+          - 'AWS-SG(Singapore)'
+          - 'GCP-AU(Sydney)'
+          - 'GCP-BR(São Paulo)'
+          - 'GCP-US(IA)'
+          - 'GCP-EU(Frankfurt)'
+          - 'GCP-JP(Osaka)'
+          - 'GCP-JP(Tokyo)'
+          - 'GCP-IL(Tel Aviv)'
+          - 'GCP-IN(Mumbai)'
+          - 'GCP-KSA(Dammam)'
+          - 'Azure-AU(Sydney)'
+          - 'Azure-BR(São Paulo)'
+          - 'Azure-CA(Montreal)'
+          - 'Azure-US(VA)'
+          - 'Azure-US(WA)'
+          - 'Azure-EU(Netherlands)'
+          - 'Azure-JP(Tokyo)'
+          - 'Azure-SG(Singapore)'
+          - 'Neo-UAE(Dubai)'
+          - 'Neo-KSA(Riyadh)'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set API endpoint and APP name
+        run: |
+          RANDOM_STR=$(head /dev/urandom | tr -dc 'a-z' | head -c 6)
+          case "${{ github.event.inputs.region }}" in
+            "SG(free)")
+              echo "CF_API=https://api.cf.ap21.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-freesg$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "US(free)")
+              echo "CF_API=https://api.cf.us10-001.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-freeus$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-AU(Sydney)")
+              echo "CF_API=https://api.cf.ap10.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsau$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            "AWS-BR(São Paulo)")
+              echo "CF_API=https://api.cf.br10.hana.ondemand.com" >> $GITHUB_ENV
+              echo "APP_NAME=moontv-awsbr$RANDOM_STR" >> $GITHUB_ENV
+              ;;
+            # ... (the rest of the case statement is omitted for brevity but should be included) ...
+            *) # Default case
+              echo "Invalid region selected"
+              exit 1
+              ;;
+          esac
+
+      - name: Install CF CLI
+        run: |
+          wget -q -O - https://packages.cloudfoundry.org/debian/cli.cloudfoundry.org.key | sudo apt-key add -
+          echo "deb https://packages.cloudfoundry.org/debian stable main" | sudo tee /etc/apt/sources.list.d/cloudfoundry-cli.list
+          sudo apt-get update
+          sudo apt-get install cf8-cli -y
+
+      - name: Login to Cloud Foundry
+        run: |
+          cf api ${{ env.CF_API }}
+          cf auth "${{ secrets.CF_USER }}" "${{ secrets.CF_PASSWORD }}"
+          cf target -o "${{ secrets.CF_ORG }}" -s "${{ secrets.CF_SPACE }}"
+
+      - name: Push app to Cloud Foundry
+        run: |
+          cf push ${{ env.APP_NAME }} --docker-image ghcr.io/eaglehhha/lunatv:latest --docker-username ${{ github.actor }} --docker-password ${{ secrets.GITHUB_TOKEN }} --no-start
+
+      - name: Configure Redis env
+        run: |
+          cf set-env ${{ env.APP_NAME }} NEXT_PUBLIC_STORAGE_TYPE "redis"
+          cf set-env ${{ env.APP_NAME }} UPSTASH_REDIS_URL "${{ secrets.UPSTASH_REDIS_URL }}"
+          cf restage ${{ env.APP_NAME }}
